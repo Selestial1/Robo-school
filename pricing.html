@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>ROBO.SCHOOL — курсы робототехники для педагогов</title>
+    <title>Курсы и цены — ROBO.SCHOOL</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="./assets/css/style.css">
 </head>
-<body data-page="home">
+<body data-page="pricing">
     <header class="header qwe">
         <a href="index.html" class="text logo-link">ROBO.SCHOOL</a>
         <nav class="qwe1 desktop-nav">
@@ -46,39 +46,55 @@
         <a href="tel:+78000001122" class="mobile-nav-link">+7 800 000 11 22</a>
     </nav>
 
-    <section class="sin" id="hero">
-        <div class="logo">
-            <div class="zap">
-                <h1 class="curs">ROBO SCHOOL</h1>
-                <p class="text1">Курсы повышения квалификации по робототехнике для педагогов начальной школы</p>
-                <a href="apply.html" class="button btn-primary">
-                    <span class="text2">Записаться на курс</span>
-                </a>
+    <section class="page-hero">
+        <h1>Курсы и стоимость</h1>
+        <p>Выберите подходящий пакет обучения — цены загружаются из базы данных</p>
+    </section>
+
+    <section class="pred" id="pricing">
+        <div class="bol">
+            <div class="tr">
+                <h2 class="tr2">Выберите нужный пакет</h2>
             </div>
-            <img class="dev" src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=783&h=917&fit=crop" alt="Робототехника в школе">
+            <div class="tr4" id="packages-grid">
+                <article class="cart">
+                    <h3 class="clt">– PRO –</h3>
+                    <p class="clt1">20.000 ₽</p>
+                    <p class="clt2">УМК по робототетхнике и программированию</p>
+                    <button type="button" class="button1 btn-primary btn-package" data-package="PRO">
+                        <span class="text2">Записаться</span>
+                    </button>
+                </article>
+                <article class="cart1">
+                    <h3 class="clt">– ROBO –</h3>
+                    <p class="clt1">15.000 ₽</p>
+                    <p class="clt2">УМК по робототетхнике</p>
+                    <button type="button" class="button1 btn-primary btn-package" data-package="ROBO">
+                        <span class="text2">Записаться</span>
+                    </button>
+                </article>
+                <article class="cart2">
+                    <h3 class="clt">– PROG –</h3>
+                    <p class="clt1">10.000 ₽</p>
+                    <p class="clt2">УМК по программированию</p>
+                    <button type="button" class="button1 btn-primary btn-package" data-package="PROG">
+                        <span class="text2">Записаться</span>
+                    </button>
+                </article>
+            </div>
         </div>
     </section>
 
-    <section class="page-links">
-        <a href="about.html" class="page-link-card">
-            <h2>О школе</h2>
-            <p>Узнайте о миссии ROBO.SCHOOL, статистике и том, что вы получите после прохождения курса.</p>
-            <span class="card-action">Подробнее →</span>
+    <section class="page-links" style="padding-top: 0;">
+        <a href="apply.html" class="page-link-card">
+            <h2>Оформить заявку</h2>
+            <p>Выбрали пакет? Перейдите на отдельную страницу заявки и заполните форму со скидкой 10%.</p>
+            <span class="card-action">Перейти к заявке →</span>
         </a>
         <a href="trainers.html" class="page-link-card">
-            <h2>Тренеры</h2>
-            <p>Познакомьтесь с профессиональными преподавателями по робототехнике и программированию.</p>
+            <h2>Наши тренеры</h2>
+            <p>Узнайте, кто будет вести занятия на курсах повышения квалификации.</p>
             <span class="card-action">Смотреть тренеров →</span>
-        </a>
-        <a href="pricing.html" class="page-link-card">
-            <h2>Курсы и цены</h2>
-            <p>Три пакета обучения: PRO, ROBO и PROG — сравните стоимость и программу.</p>
-            <span class="card-action">Смотреть цены →</span>
-        </a>
-        <a href="apply.html" class="page-link-card">
-            <h2>Заявка на курс</h2>
-            <p>Оставьте заявку онлайн — данные сохранятся в базе, вам придёт подтверждение на e-mail.</p>
-            <span class="card-action">Записаться →</span>
         </a>
     </section>
 

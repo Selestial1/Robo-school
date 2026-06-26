@@ -1,5 +1,14 @@
 const TRAINERS = {};
 
+function highlightActiveNav() {
+    const page = document.body.dataset.page;
+    if (!page) return;
+
+    document.querySelectorAll('[data-nav]').forEach((link) => {
+        link.classList.toggle('is-active', link.dataset.nav === page);
+    });
+}
+
 async function loadTrainersFromApi() {
     try {
         const res = await fetch('/api/trainers');
@@ -49,6 +58,55 @@ async function loadTrainersFromApi() {
     }
 }
 
+function formatPrice(price) {
+    return `${Number(price).toLocaleString('ru-RU')} ₽`;
+}
+
+async function loadPackagesFromApi() {
+    const grid = document.getElementById('packages-grid');
+    const pkgSelect = document.getElementById('package-select');
+    if (!grid && !pkgSelect) return;
+
+    try {
+        const res = await fetch('/api/packages');
+        if (!res.ok) return;
+        const packages = await res.json();
+        if (!packages.length) return;
+
+        if (grid) {
+            const cardClasses = ['cart', 'cart1', 'cart2'];
+            grid.innerHTML = packages.map((pkg, index) => {
+                const cardClass = cardClasses[index % cardClasses.length];
+                return `
+                <article class="${cardClass}">
+                    <h3 class="clt">– ${pkg.name.replace(/^[\s\-–]+|[\s\-–]+$/g, '')} –</h3>
+                    <p class="clt1">${formatPrice(pkg.price)}</p>
+                    <p class="clt2">${pkg.description}</p>
+                    <button type="button" class="button1 btn-primary btn-package" data-package="${pkg.code}">
+                        <span class="text2">Записаться</span>
+                    </button>
+                </article>
+            `;
+            }).join('');
+
+            bindPackageButtons();
+        }
+
+        if (pkgSelect) {
+            const current = (pkgSelect.value || new URLSearchParams(window.location.search).get('package') || '').toUpperCase();
+            pkgSelect.innerHTML = `
+                <option value="">— Выберите пакет —</option>
+                ${packages.map((pkg) => `
+                    <option value="${pkg.code}">${pkg.code} — ${pkg.description} (${formatPrice(pkg.price)})</option>
+                `).join('')}
+            `;
+            if (current) syncPackageSelection(current);
+        }
+    } catch {
+        bindPackageButtons();
+    }
+}
+
 const menuToggle = document.getElementById('menu-toggle');
 const mobileNav = document.getElementById('mobile-nav');
 const trainerModal = document.getElementById('trainer-modal');
@@ -59,6 +117,7 @@ const selectedPackageEl = document.getElementById('selected-package');
 const formMessage = document.getElementById('form-message');
 
 function closeMobileMenu() {
+    if (!mobileNav || !menuToggle) return;
     mobileNav.classList.remove('is-open');
     mobileNav.setAttribute('aria-hidden', 'true');
     menuToggle.setAttribute('aria-expanded', 'false');
@@ -68,6 +127,7 @@ function closeMobileMenu() {
 }
 
 function openMobileMenu() {
+    if (!mobileNav || !menuToggle) return;
     mobileNav.classList.add('is-open');
     mobileNav.setAttribute('aria-hidden', 'false');
     menuToggle.setAttribute('aria-expanded', 'true');
@@ -95,7 +155,7 @@ document.querySelectorAll('[data-scroll]').forEach((btn) => {
     });
 });
 
-document.querySelectorAll('.nav-link').forEach((link) => {
+document.querySelectorAll('.nav-link[href^="#"]').forEach((link) => {
     link.addEventListener('click', (e) => {
         e.preventDefault();
         const target = document.querySelector(link.getAttribute('href'));
@@ -105,7 +165,7 @@ document.querySelectorAll('.nav-link').forEach((link) => {
 
 function openTrainerModal(id) {
     const trainer = TRAINERS[id];
-    if (!trainer) return;
+    if (!trainer || !trainerModal) return;
 
     document.getElementById('modal-photo').src = trainer.photo;
     document.getElementById('modal-photo').alt = trainer.name;
@@ -119,14 +179,17 @@ function openTrainerModal(id) {
 }
 
 function closeTrainerModal() {
+    if (!trainerModal) return;
     trainerModal.classList.remove('is-open');
     trainerModal.setAttribute('aria-hidden', 'true');
     document.body.style.overflow = '';
 }
 
-document.querySelectorAll('.btn-trainer').forEach((btn) => {
-    btn.addEventListener('click', () => openTrainerModal(btn.dataset.trainer));
-});
+function bindTrainerButtons() {
+    document.querySelectorAll('.btn-trainer').forEach((btn) => {
+        btn.addEventListener('click', () => openTrainerModal(btn.dataset.trainer));
+    });
+}
 
 modalClose?.addEventListener('click', closeTrainerModal);
 
@@ -141,16 +204,53 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
-document.querySelectorAll('.btn-package').forEach((btn) => {
-    btn.addEventListener('click', () => {
-        const pkg = btn.dataset.package;
-        packageField.value = pkg;
+function selectPackage(pkg) {
+    if (!pkg) return;
+    window.location.href = `apply.html?package=${encodeURIComponent(pkg)}`;
+}
+
+function syncPackageSelection(pkg) {
+    if (!pkg) return;
+    if (packageField) packageField.value = pkg;
+    const pkgSelect = document.getElementById('package-select');
+    if (pkgSelect) pkgSelect.value = pkg;
+    if (selectedPackageEl) {
         selectedPackageEl.hidden = false;
         selectedPackageEl.textContent = `Выбран пакет: ${pkg}`;
-        document.getElementById('register').scrollIntoView({ behavior: 'smooth', block: 'start' });
-        registerForm.querySelector('[name="name"]').focus();
+    }
+}
+
+function bindPackageSelect() {
+    const pkgSelect = document.getElementById('package-select');
+    if (!pkgSelect) return;
+
+    pkgSelect.addEventListener('change', () => {
+        const pkg = pkgSelect.value.trim().toUpperCase();
+        if (packageField) packageField.value = pkg;
+        if (selectedPackageEl) {
+            if (pkg) {
+                selectedPackageEl.hidden = false;
+                selectedPackageEl.textContent = `Выбран пакет: ${pkg}`;
+            } else {
+                selectedPackageEl.hidden = true;
+                selectedPackageEl.textContent = '';
+            }
+        }
     });
-});
+}
+
+function bindPackageButtons() {
+    document.querySelectorAll('.btn-package').forEach((btn) => {
+        btn.addEventListener('click', () => selectPackage(btn.dataset.package));
+    });
+}
+
+function applyPackageFromUrl() {
+    const params = new URLSearchParams(window.location.search);
+    const pkg = params.get('package')?.trim().toUpperCase();
+    if (!pkg) return;
+    syncPackageSelection(pkg);
+}
 
 registerForm?.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -161,7 +261,9 @@ registerForm?.addEventListener('submit', async (e) => {
     const name = formData.get('name')?.toString().trim();
     const phone = formData.get('phone')?.toString().trim();
     const email = formData.get('email')?.toString().trim();
-    const pkg = formData.get('package')?.toString().trim();
+    const pkg = formData.get('package')?.toString().trim()
+        || document.getElementById('package-select')?.value?.trim()
+        || null;
 
     let valid = true;
 
@@ -210,9 +312,13 @@ registerForm?.addEventListener('submit', async (e) => {
         formMessage.textContent = `Спасибо, ${name}! Заявка №${data.id} принята. Мы свяжемся с вами в ближайшие несколько дней.${emailNote}`;
         formMessage.classList.add('success');
         registerForm.reset();
-        packageField.value = '';
-        selectedPackageEl.hidden = true;
-        selectedPackageEl.textContent = '';
+        if (packageField) packageField.value = '';
+        const pkgSelect = document.getElementById('package-select');
+        if (pkgSelect) pkgSelect.value = '';
+        if (selectedPackageEl) {
+            selectedPackageEl.hidden = true;
+            selectedPackageEl.textContent = '';
+        }
     } catch {
         formMessage.textContent = 'Сервер недоступен. Запустите start.bat и откройте http://localhost:5080';
         formMessage.classList.add('error');
@@ -222,24 +328,30 @@ registerForm?.addEventListener('submit', async (e) => {
     }
 });
 
-loadTrainersFromApi();
+highlightActiveNav();
+loadTrainersFromApi().then(() => bindTrainerButtons());
+bindPackageButtons();
+bindPackageSelect();
+loadPackagesFromApi().then(() => applyPackageFromUrl());
 
-const swiper = new Swiper('.trainers-swiper', {
-    direction: 'horizontal',
-    loop: true,
-    slidesPerView: 1,
-    spaceBetween: 24,
-    pagination: {
-        el: '.swiper-pagination',
-        clickable: true,
-    },
-    navigation: {
-        nextEl: '.swiper-button-next',
-        prevEl: '.swiper-button-prev',
-    },
-    breakpoints: {
-        640: { slidesPerView: 2 },
-        1024: { slidesPerView: 3 },
-        1280: { slidesPerView: 4 },
-    },
-});
+if (document.querySelector('.trainers-swiper')) {
+    new Swiper('.trainers-swiper', {
+        direction: 'horizontal',
+        loop: true,
+        slidesPerView: 1,
+        spaceBetween: 24,
+        pagination: {
+            el: '.swiper-pagination',
+            clickable: true,
+        },
+        navigation: {
+            nextEl: '.swiper-button-next',
+            prevEl: '.swiper-button-prev',
+        },
+        breakpoints: {
+            640: { slidesPerView: 2 },
+            1024: { slidesPerView: 3 },
+            1280: { slidesPerView: 4 },
+        },
+    });
+}

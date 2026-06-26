@@ -8,7 +8,7 @@ RUN dotnet publish ./server/RoboSchool.csproj -c Release -o /app/publish
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
 WORKDIR /app
 COPY --from=build /app/publish .
-COPY index.html admin.html status.html ./site/
+COPY index.html about.html trainers.html pricing.html apply.html admin.html status.html ./site/
 COPY assets ./site/assets/
 COPY fonts ./site/fonts/
 ENV SITE_ROOT=/app/site

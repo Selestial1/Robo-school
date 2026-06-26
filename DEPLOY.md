@@ -14,7 +14,10 @@
 1. Откройте [https://neon.tech](https://neon.tech) и зарегистрируйтесь (можно через Google/GitHub).
 2. Нажмите **New Project** → имя, например `robo-school` → **Create project**.
 3. На главной странице проекта скопируйте **Connection string** (формат `postgresql://...`).
-4. Сохраните строку — она понадобится на Render как `DATABASE_URL`.
+4. **Важно:** выберите **Direct connection** (не Pooled). В hostname не должно быть `-pooler`.
+   - ✅ `ep-xxxxx.us-east-2.aws.neon.tech`
+   - ❌ `ep-xxxxx-pooler.us-east-2.aws.neon.tech`
+5. Сохраните строку — она понадобится на Render как `DATABASE_URL`.
 
 **Как смотреть БД в Neon:**
 
@@ -125,5 +128,66 @@ Render   → хостинг сайта 24/7 (бесплатно, с «сном»
 admin.html  → заявки и таблицы на вашем сайте
 status.html → проверка «работает / не работает»
 ```
+
+---
+
+## Ошибка `relation "packages" does not exist`
+
+**Причина:** на Render запущена старая версия кода, таблицы в Neon не созданы.
+
+### Быстрое исправление (3 действия)
+
+**1. Загрузите исправление на GitHub**
+
+Дважды щёлкните файл **`upload-fix.bat`** в папке проекта  
+(или в PowerShell выполните команды из него).
+
+**2. На Render перезапустите деплой**
+
+1. [dashboard.render.com](https://dashboard.render.com) → ваш сервис
+2. **Manual Deploy** → **Deploy latest commit**
+3. Подождите 5–10 минут
+
+**3. Проверьте DATABASE_URL**
+
+На Render → **Environment** → `DATABASE_URL` должен быть **Direct connection** из Neon (без `-pooler` в адресе).
+
+### Альтернатива: создать таблицы вручную в Neon
+
+1. [console.neon.tech](https://console.neon.tech) → ваш проект → **SQL Editor**
+2. Вставьте и нажмите **Run**:
+
+```sql
+CREATE TABLE IF NOT EXISTS packages (
+    "Id" SERIAL PRIMARY KEY,
+    "Code" VARCHAR(20) NOT NULL,
+    "Name" VARCHAR(50) NOT NULL,
+    "Price" INTEGER NOT NULL,
+    "Description" VARCHAR(500) NOT NULL
+);
+CREATE UNIQUE INDEX IF NOT EXISTS "IX_packages_Code" ON packages ("Code");
+
+CREATE TABLE IF NOT EXISTS trainers (
+    "Id" SERIAL PRIMARY KEY,
+    "Slug" VARCHAR(40) NOT NULL,
+    "Name" VARCHAR(120) NOT NULL,
+    "Role" VARCHAR(120) NOT NULL,
+    "PhotoUrl" VARCHAR(500) NOT NULL,
+    "Bio" VARCHAR(2000) NOT NULL
+);
+CREATE UNIQUE INDEX IF NOT EXISTS "IX_trainers_Slug" ON trainers ("Slug");
+
+CREATE TABLE IF NOT EXISTS applications (
+    "Id" SERIAL PRIMARY KEY,
+    "Name" VARCHAR(120) NOT NULL,
+    "Phone" VARCHAR(30) NOT NULL,
+    "Email" VARCHAR(120) NOT NULL,
+    "PackageCode" VARCHAR(20),
+    "CreatedAt" TIMESTAMP NOT NULL
+);
+CREATE INDEX IF NOT EXISTS "IX_applications_CreatedAt" ON applications ("CreatedAt");
+```
+
+3. На Render: **Manual Deploy** → **Deploy latest commit**
 
 Если нужна помощь с конкретным шагом (Neon, GitHub или Render) — напишите, на каком этапе вы сейчас.

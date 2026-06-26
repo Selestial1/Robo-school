@@ -7,13 +7,16 @@ public static class DatabaseInitializer
 {
     public static async Task InitializeAsync(AppDbContext db, bool isPostgreSql)
     {
-        if (!isPostgreSql)
+        if (isPostgreSql)
+        {
+            await db.Database.ExecuteSqlRawAsync(PostgreSqlSchema.CreateTablesSql);
+        }
+        else
         {
             var dataDir = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "data"));
             Directory.CreateDirectory(dataDir);
+            await db.Database.EnsureCreatedAsync();
         }
-
-        await db.Database.EnsureCreatedAsync();
 
         if (!await db.Packages.AnyAsync())
         {

@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>ROBO.SCHOOL — курсы робототехники для педагогов</title>
+    <title>Заявка на курс — ROBO.SCHOOL</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="./assets/css/style.css">
 </head>
-<body data-page="home">
+<body data-page="apply">
     <header class="header qwe">
         <a href="index.html" class="text logo-link">ROBO.SCHOOL</a>
         <nav class="qwe1 desktop-nav">
@@ -46,40 +46,46 @@
         <a href="tel:+78000001122" class="mobile-nav-link">+7 800 000 11 22</a>
     </nav>
 
-    <section class="sin" id="hero">
-        <div class="logo">
-            <div class="zap">
-                <h1 class="curs">ROBO SCHOOL</h1>
-                <p class="text1">Курсы повышения квалификации по робототехнике для педагогов начальной школы</p>
-                <a href="apply.html" class="button btn-primary">
-                    <span class="text2">Записаться на курс</span>
-                </a>
-            </div>
-            <img class="dev" src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=783&h=917&fit=crop" alt="Робототехника в школе">
-        </div>
+    <section class="page-hero">
+        <h1>Заявка на курс</h1>
+        <p>Заполните форму — заявка автоматически сохранится в базе данных, а на ваш e-mail придёт подтверждение</p>
     </section>
 
-    <section class="page-links">
-        <a href="about.html" class="page-link-card">
-            <h2>О школе</h2>
-            <p>Узнайте о миссии ROBO.SCHOOL, статистике и том, что вы получите после прохождения курса.</p>
-            <span class="card-action">Подробнее →</span>
-        </a>
-        <a href="trainers.html" class="page-link-card">
-            <h2>Тренеры</h2>
-            <p>Познакомьтесь с профессиональными преподавателями по робототехнике и программированию.</p>
-            <span class="card-action">Смотреть тренеров →</span>
-        </a>
-        <a href="pricing.html" class="page-link-card">
-            <h2>Курсы и цены</h2>
-            <p>Три пакета обучения: PRO, ROBO и PROG — сравните стоимость и программу.</p>
-            <span class="card-action">Смотреть цены →</span>
-        </a>
-        <a href="apply.html" class="page-link-card">
-            <h2>Заявка на курс</h2>
-            <p>Оставьте заявку онлайн — данные сохранятся в базе, вам придёт подтверждение на e-mail.</p>
-            <span class="card-action">Записаться →</span>
-        </a>
+    <section class="red apply-section" id="register">
+        <div class="skid">
+            <h2 class="foot">Запишитесь на курс<br>со скидкой 10%</h2>
+            <p class="foot1">Акция действительна до 10 марта 2026 года</p>
+            <p class="foot1 apply-hint">Не выбрали пакет? <a href="pricing.html">Посмотреть курсы и цены</a></p>
+        </div>
+        <form class="red1 register-form" id="register-form" novalidate>
+            <label class="skid1 field">
+                <span class="sr-only">Имя</span>
+                <input type="text" name="name" class="foot2 input" placeholder="Имя" required autocomplete="name">
+            </label>
+            <label class="skid2 field">
+                <span class="sr-only">Телефон</span>
+                <input type="tel" name="phone" class="foot2 input" placeholder="Телефон" required autocomplete="tel">
+            </label>
+            <label class="skid2 field">
+                <span class="sr-only">E-mail</span>
+                <input type="email" name="email" class="foot2 input" placeholder="E-mail" required autocomplete="email">
+            </label>
+            <label class="skid2 field apply-package-field">
+                <span class="apply-label">Пакет курса</span>
+                <select id="package-select" class="foot2 input apply-select">
+                    <option value="">— Выберите пакет —</option>
+                    <option value="PRO">PRO — робототехника и программирование (20 000 ₽)</option>
+                    <option value="ROBO">ROBO — робототехника (15 000 ₽)</option>
+                    <option value="PROG">PROG — программирование (10 000 ₽)</option>
+                </select>
+            </label>
+            <input type="hidden" name="package" id="package-field" value="">
+            <p class="selected-package" id="selected-package" hidden></p>
+            <button type="submit" class="skid3 btn-submit">
+                <span class="foot3">Оформить заявку</span>
+            </button>
+            <p class="form-message" id="form-message" role="status" aria-live="polite"></p>
+        </form>
     </section>
 
     <footer class="sink">

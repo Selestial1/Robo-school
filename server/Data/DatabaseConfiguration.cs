@@ -41,6 +41,15 @@ public static class DatabaseConfiguration
             SslMode = SslMode.Require,
         };
 
-        return builder.ConnectionString;
+        return UseDirectNeonHost(builder).ConnectionString;
+    }
+
+    private static NpgsqlConnectionStringBuilder UseDirectNeonHost(NpgsqlConnectionStringBuilder builder)
+    {
+        // Neon pooler не поддерживает CREATE TABLE — нужно прямое подключение.
+        if (builder.Host?.Contains("-pooler.", StringComparison.Ordinal) == true)
+            builder.Host = builder.Host.Replace("-pooler.", ".", StringComparison.Ordinal);
+
+        return builder;
     }
 }
