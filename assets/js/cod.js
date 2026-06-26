@@ -1,5 +1,47 @@
 const TRAINERS = {};
 
+/** Локальные фото — лежат на сервере, работают без Unsplash (важно для школ и других сетей). */
+const SITE_PHOTOS = {
+    hero: '/assets/css/unsplash_rriAI0nhcbc.jpg',
+    trainers: {
+        irina: '/assets/css/unsplash_IF9TK5Uy-KI.jpg',
+        marina: '/assets/css/unsplash_OhKElOkQ3RE.jpg',
+        maxim: '/assets/css/unsplash_Z_bTArFy6ks.jpg',
+        konstantin: '/assets/css/unsplash_Zz5LQe-VSMY.jpg',
+        liza: '/assets/css/unsplash_rriAI0nhcbc.jpg',
+    },
+};
+
+function localTrainerPhoto(slug) {
+    return SITE_PHOTOS.trainers[slug] || SITE_PHOTOS.hero;
+}
+
+function normalizePhotoUrl(slug, photoUrl) {
+    if (!photoUrl || photoUrl.includes('unsplash.com')) {
+        return localTrainerPhoto(slug);
+    }
+    if (photoUrl.startsWith('/')) return photoUrl;
+    if (photoUrl.startsWith('./')) return photoUrl.slice(1);
+    return photoUrl;
+}
+
+function applyLocalPhotosToPage() {
+    document.querySelectorAll('[data-trainer]').forEach((card) => {
+        const slug = card.dataset.trainer;
+        const img = card.querySelector('img');
+        if (img && slug) {
+            img.src = localTrainerPhoto(slug);
+            img.loading = 'lazy';
+        }
+    });
+
+    const heroImg = document.querySelector('.dev');
+    if (heroImg) {
+        heroImg.src = SITE_PHOTOS.hero;
+        heroImg.loading = 'lazy';
+    }
+}
+
 function highlightActiveNav() {
     const page = document.body.dataset.page;
     if (!page) return;
@@ -18,43 +60,45 @@ async function loadTrainersFromApi() {
             TRAINERS[t.slug] = {
                 name: t.name,
                 role: t.role,
-                photo: t.photoUrl,
+                photo: normalizePhotoUrl(t.slug, t.photoUrl),
                 text: t.bio,
             };
         });
+        applyLocalPhotosToPage();
     } catch {
         Object.assign(TRAINERS, {
             irina: {
                 name: 'Ирина Лайм',
                 role: 'преподаватель по робототехнике',
-                photo: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=560&h=400&fit=crop',
+                photo: localTrainerPhoto('irina'),
                 text: 'Ирина — педагог с 8-летним опытом преподавания робототехники в начальной школе.',
             },
             marina: {
                 name: 'Марина Орлова',
                 role: 'преподаватель по робототехнике',
-                photo: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=560&h=400&fit=crop',
+                photo: localTrainerPhoto('marina'),
                 text: 'Марина специализируется на проектной деятельности и соревнованиях по робототехнике.',
             },
             maxim: {
                 name: 'Максим Петров',
                 role: 'преподаватель по программированию',
-                photo: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=560&h=400&fit=crop',
+                photo: localTrainerPhoto('maxim'),
                 text: 'Максим обучает Scratch, Python и основам алгоритмизации для детей 6–12 лет.',
             },
             konstantin: {
                 name: 'Константин Назаров',
                 role: 'преподаватель по робототехнике',
-                photo: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=560&h=400&fit=crop',
+                photo: localTrainerPhoto('konstantin'),
                 text: 'Константин — инженер-педагог с опытом работы в R:ED LAB.',
             },
             liza: {
                 name: 'Лиза Весенняя',
                 role: 'преподаватель по программированию',
-                photo: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=560&h=400&fit=crop',
+                photo: localTrainerPhoto('liza'),
                 text: 'Лиза ведёт курсы по визуальному программированию и цифровой грамотности.',
             },
         });
+        applyLocalPhotosToPage();
     }
 }
 
@@ -329,6 +373,7 @@ registerForm?.addEventListener('submit', async (e) => {
 });
 
 highlightActiveNav();
+applyLocalPhotosToPage();
 loadTrainersFromApi().then(() => bindTrainerButtons());
 bindPackageButtons();
 bindPackageSelect();

@@ -5,6 +5,18 @@ namespace RoboSchool.Data;
 
 public static class DatabaseInitializer
 {
+    private static readonly Dictionary<string, string> LocalTrainerPhotos = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["irina"] = "/assets/css/unsplash_IF9TK5Uy-KI.jpg",
+        ["marina"] = "/assets/css/unsplash_OhKElOkQ3RE.jpg",
+        ["maxim"] = "/assets/css/unsplash_Z_bTArFy6ks.jpg",
+        ["konstantin"] = "/assets/css/unsplash_Zz5LQe-VSMY.jpg",
+        ["liza"] = "/assets/css/unsplash_rriAI0nhcbc.jpg",
+    };
+
+    private static string LocalPhotoFor(string slug) =>
+        LocalTrainerPhotos.TryGetValue(slug, out var photo) ? photo : "/assets/css/unsplash_rriAI0nhcbc.jpg";
+
     public static async Task InitializeAsync(AppDbContext db, bool isPostgreSql)
     {
         if (isPostgreSql)
@@ -53,7 +65,7 @@ public static class DatabaseInitializer
                     Slug = "irina",
                     Name = "Ирина Лайм",
                     Role = "преподаватель по робототехнике",
-                    PhotoUrl = "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=560&h=400&fit=crop",
+                    PhotoUrl = LocalPhotoFor("irina"),
                     Bio = "Ирина — педагог с 8-летним опытом преподавания робототехники в начальной школе. Разрабатывает УМК и проводит практические занятия для учителей по LEGO Education и Arduino.",
                 },
                 new Trainer
@@ -61,7 +73,7 @@ public static class DatabaseInitializer
                     Slug = "marina",
                     Name = "Марина Орлова",
                     Role = "преподаватель по робототехнике",
-                    PhotoUrl = "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=560&h=400&fit=crop",
+                    PhotoUrl = LocalPhotoFor("marina"),
                     Bio = "Марина специализируется на проектной деятельности и соревнованиях по робототехнике. Помогает педагогам внедрять робототехнику в учебный процесс с нуля.",
                 },
                 new Trainer
@@ -69,7 +81,7 @@ public static class DatabaseInitializer
                     Slug = "maxim",
                     Name = "Максим Петров",
                     Role = "преподаватель по программированию",
-                    PhotoUrl = "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=560&h=400&fit=crop",
+                    PhotoUrl = LocalPhotoFor("maxim"),
                     Bio = "Максим обучает Scratch, Python и основам алгоритмизации для детей 6–12 лет. Автор методических материалов по программированию для начальной школы.",
                 },
                 new Trainer
@@ -77,7 +89,7 @@ public static class DatabaseInitializer
                     Slug = "konstantin",
                     Name = "Константин Назаров",
                     Role = "преподаватель по робототехнике",
-                    PhotoUrl = "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=560&h=400&fit=crop",
+                    PhotoUrl = LocalPhotoFor("konstantin"),
                     Bio = "Константин — инженер-педагог с опытом работы в R:ED LAB. Проводит практику для слушателей курсов и помогает освоить оборудование учебных классов.",
                 },
                 new Trainer
@@ -85,10 +97,19 @@ public static class DatabaseInitializer
                     Slug = "liza",
                     Name = "Лиза Весенняя",
                     Role = "преподаватель по программированию",
-                    PhotoUrl = "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=560&h=400&fit=crop",
+                    PhotoUrl = LocalPhotoFor("liza"),
                     Bio = "Лиза ведёт курсы по визуальному программированию и цифровой грамотности. Уделяет внимание адаптации материала под разный уровень подготовки детей.",
                 }
             );
+        }
+
+        foreach (var trainer in await db.Trainers.ToListAsync())
+        {
+            if (trainer.PhotoUrl.Contains("unsplash.com", StringComparison.OrdinalIgnoreCase)
+                && LocalTrainerPhotos.TryGetValue(trainer.Slug, out var localPhoto))
+            {
+                trainer.PhotoUrl = localPhoto;
+            }
         }
 
         await db.SaveChangesAsync();
