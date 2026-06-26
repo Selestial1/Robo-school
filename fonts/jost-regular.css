@@ -1,0 +1,9 @@
+@font-face {
+	font-family: 'Jost-Regular';
+	src: url('../fonts/jost-regular.eot'); /* IE 9 Compatibility Mode */
+	src: url('../fonts/jost-regular.eot?#iefix') format('embedded-opentype'), /* IE < 9 */
+		url('../fonts/jost-regular.woff2') format('woff2'), /* Super Modern Browsers */
+		url('../fonts/jost-regular.woff') format('woff'), /* Firefox >= 3.6, any other modern browser */
+		url('../fonts/jost-regular.ttf') format('truetype'), /* Safari, Android, iOS */
+		url('../fonts/jost-regular.svg#jost-regular') format('svg'); /* Chrome < 4, Legacy iOS */
+}

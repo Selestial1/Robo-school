@@ -1,0 +1,5 @@
+data/robo.db
+data/*.db-shm
+data/*.db-wal
+server/bin/
+server/obj/

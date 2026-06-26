@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ROBO.SCHOOL — панель БД</title>
+    <link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: "Jost", sans-serif;
+            background: #141024;
+            color: #fff;
+            min-height: 100vh;
+            padding: 32px 20px 48px;
+        }
+        .wrap { max-width: 1180px; margin: 0 auto; }
+        h1 { font-size: 30px; margin-bottom: 6px; }
+        .sub { color: #ffffffb2; margin-bottom: 24px; line-height: 1.5; }
+        a { color: #ff6b6f; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        .panel {
+            background: #1f1a38;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+        .tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+        .tab {
+            background: #ffffff12;
+            color: #fff;
+            border: none;
+            border-radius: 999px;
+            padding: 10px 18px;
+            font: inherit;
+            cursor: pointer;
+        }
+        .tab.active { background: #D52027; }
+        label { display: block; margin-bottom: 8px; font-size: 14px; color: #ffffffb2; }
+        input {
+            width: 100%;
+            max-width: 360px;
+            padding: 12px 16px;
+            border: none;
+            border-radius: 8px;
+            font: inherit;
+            margin-bottom: 12px;
+        }
+        button.primary {
+            background: #D52027;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 24px;
+            font: inherit;
+            cursor: pointer;
+        }
+        button.primary:hover { background: #b81c22; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 12px;
+            font-size: 15px;
+        }
+        th, td {
+            text-align: left;
+            padding: 12px 10px;
+            border-bottom: 1px solid #ffffff22;
+            vertical-align: top;
+        }
+        th { color: #ffffffb2; font-weight: 500; }
+        .empty, .muted { color: #ffffffb2; }
+        .error { color: #ffb4b4; margin-top: 12px; }
+        .success { color: #9dffb0; margin-top: 12px; }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+        }
+        .stat {
+            background: #ffffff0d;
+            border-radius: 10px;
+            padding: 18px;
+        }
+        .stat-value { font-size: 28px; font-weight: 600; margin-bottom: 4px; }
+        .stat-label { color: #ffffffb2; font-size: 14px; }
+        .badge {
+            display: inline-block;
+            background: #D52027;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 13px;
+        }
+        .badge.ok { background: #1f8f4d; }
+        .badge.warn { background: #b07d00; }
+        .del {
+            background: transparent;
+            border: 1px solid #ffffff44;
+            color: #fff;
+            border-radius: 8px;
+            padding: 6px 12px;
+            font-size: 13px;
+            cursor: pointer;
+        }
+        .del:hover { background: #ffffff11; }
+        .section { display: none; }
+        .section.active { display: block; }
+        .toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-top: 12px;
+        }
+        code {
+            background: #ffffff12;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <h1>Панель базы данных ROBO.SCHOOL</h1>
+        <p class="sub">
+            <a href="/">← На сайт</a> ·
+            <a href="/status.html">Статус сервера</a> ·
+            просмотр таблиц и заявок
+        </p>
+
+        <div class="panel">
+            <label for="admin-key">Ключ администратора</label>
+            <div class="toolbar">
+                <input type="password" id="admin-key" placeholder="Ключ из appsettings.json или Render">
+                <button type="button" class="primary" id="connect-btn">Подключиться</button>
+                <button type="button" class="primary" id="refresh-btn">Обновить</button>
+            </div>
+            <p class="error" id="error"></p>
+            <p class="success" id="success"></p>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" data-tab="overview">Обзор</button>
+            <button class="tab" data-tab="applications">Заявки</button>
+            <button class="tab" data-tab="packages">Пакеты</button>
+            <button class="tab" data-tab="trainers">Тренеры</button>
+            <button class="tab" data-tab="status">Статус</button>
+        </div>
+
+        <div class="panel section active" id="section-overview">
+            <div class="stats" id="stats"></div>
+            <div class="links">
+                <a href="https://console.neon.tech" target="_blank" rel="noopener">Открыть Neon (облачная БД)</a>
+            </div>
+        </div>
+
+        <div class="panel section" id="section-applications">
+            <p id="applications-count" class="muted"></p>
+            <div id="applications-table"></div>
+        </div>
+
+        <div class="panel section" id="section-packages">
+            <div id="packages-table"></div>
+        </div>
+
+        <div class="panel section" id="section-trainers">
+            <div id="trainers-table"></div>
+        </div>
+
+        <div class="panel section" id="section-status">
+            <div id="status-content" class="empty">Загрузка...</div>
+            <p class="muted" style="margin-top:12px">Обновляется автоматически каждые 30 секунд.</p>
+        </div>
+    </div>
+
+    <script>
+        const keyInput = document.getElementById('admin-key');
+        const connectBtn = document.getElementById('connect-btn');
+        const refreshBtn = document.getElementById('refresh-btn');
+        const errorEl = document.getElementById('error');
+        const successEl = document.getElementById('success');
+        const tabs = document.querySelectorAll('.tab');
+        const sections = document.querySelectorAll('.section');
+        let statusTimer = null;
+
+        keyInput.value = localStorage.getItem('robo-admin-key') || '';
+
+        function getKey() {
+            return keyInput.value.trim();
+        }
+
+        function setError(message) {
+            errorEl.textContent = message || '';
+            successEl.textContent = '';
+        }
+
+        function setSuccess(message) {
+            successEl.textContent = message || '';
+            errorEl.textContent = '';
+        }
+
+        function formatDate(iso) {
+            return new Date(iso).toLocaleString('ru-RU');
+        }
+
+        function switchTab(name) {
+            tabs.forEach(tab => tab.classList.toggle('active', tab.dataset.tab === name));
+            sections.forEach(section => section.classList.toggle('active', section.id === `section-${name}`));
+            if (name === 'status') startStatusPolling();
+            else stopStatusPolling();
+        }
+
+        tabs.forEach(tab => tab.addEventListener('click', () => switchTab(tab.dataset.tab)));
+
+        async function fetchJson(url, needsKey = false) {
+            const res = await fetch(url);
+            if (needsKey && res.status === 401) throw new Error('Неверный ключ администратора.');
+            if (!res.ok) throw new Error('Ошибка загрузки данных.');
+            return res.json();
+        }
+
+        async function loadOverview() {
+            const key = getKey();
+            if (!key) return;
+
+            const overview = await fetchJson(`/api/admin/overview?key=${encodeURIComponent(key)}`, true);
+            document.getElementById('stats').innerHTML = `
+                <div class="stat">
+                    <div class="stat-value">${overview.applicationsCount}</div>
+                    <div class="stat-label">Заявок</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">${overview.packagesCount}</div>
+                    <div class="stat-label">Пакетов</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">${overview.trainersCount}</div>
+                    <div class="stat-label">Тренеров</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">${overview.databaseConnected ? 'OK' : 'ERR'}</div>
+                    <div class="stat-label">База: ${overview.database}</div>
+                </div>
+            `;
+
+            if (overview.lastApplicationAt) {
+                document.getElementById('stats').innerHTML += `
+                    <div class="stat">
+                        <div class="stat-value" style="font-size:18px">${formatDate(overview.lastApplicationAt)}</div>
+                        <div class="stat-label">Последняя заявка</div>
+                    </div>
+                `;
+            }
+        }
+
+        async function loadApplications() {
+            const key = getKey();
+            const items = await fetchJson(`/api/applications?key=${encodeURIComponent(key)}`, true);
+            document.getElementById('applications-count').textContent = `Всего заявок: ${items.length}`;
+
+            if (!items.length) {
+                document.getElementById('applications-table').innerHTML = '<p class="empty">Заявок пока нет.</p>';
+                return;
+            }
+
+            document.getElementById('applications-table').innerHTML = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Имя</th>
+                            <th>Телефон</th>
+                            <th>E-mail</th>
+                            <th>Пакет</th>
+                            <th>Дата</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${items.map(item => `
+                            <tr>
+                                <td>${item.id}</td>
+                                <td>${item.name}</td>
+                                <td><a href="tel:${item.phone}">${item.phone}</a></td>
+                                <td><a href="mailto:${item.email}">${item.email}</a></td>
+                                <td>${item.packageCode ? `<span class="badge">${item.packageCode}</span>` : '—'}</td>
+                                <td>${formatDate(item.createdAt)}</td>
+                                <td><button class="del" data-delete="${item.id}">Удалить</button></td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+
+            document.querySelectorAll('[data-delete]').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    if (!confirm('Удалить заявку #' + btn.dataset.delete + '?')) return;
+                    const delRes = await fetch(`/api/applications/${btn.dataset.delete}?key=${encodeURIComponent(key)}`, {
+                        method: 'DELETE',
+                    });
+                    if (delRes.ok) await loadApplications();
+                });
+            });
+        }
+
+        async function loadPackages() {
+            const items = await fetchJson('/api/packages');
+            document.getElementById('packages-table').innerHTML = `
+                <table>
+                    <thead>
+                        <tr><th>Код</th><th>Название</th><th>Цена</th><th>Описание</th></tr>
+                    </thead>
+                    <tbody>
+                        ${items.map(item => `
+                            <tr>
+                                <td><span class="badge">${item.code}</span></td>
+                                <td>${item.name}</td>
+                                <td>${item.price.toLocaleString('ru-RU')} ₽</td>
+                                <td>${item.description}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        async function loadTrainers() {
+            const items = await fetchJson('/api/trainers');
+            document.getElementById('trainers-table').innerHTML = `
+                <table>
+                    <thead>
+                        <tr><th>Slug</th><th>Имя</th><th>Роль</th><th>Фото</th><th>Описание</th></tr>
+                    </thead>
+                    <tbody>
+                        ${items.map(item => `
+                            <tr>
+                                <td>${item.slug}</td>
+                                <td>${item.name}</td>
+                                <td>${item.role}</td>
+                                <td><a href="${item.photoUrl}" target="_blank" rel="noopener">ссылка</a></td>
+                                <td>${item.bio}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        async function loadStatus() {
+            const health = await fetchJson('/api/health');
+            const badgeClass = health.status === 'ok' ? 'ok' : 'warn';
+            document.getElementById('status-content').innerHTML = `
+                <p><span class="badge ${badgeClass}">${health.status.toUpperCase()}</span></p>
+                <table>
+                    <tbody>
+                        <tr><th>База данных</th><td>${health.database}</td></tr>
+                        <tr><th>Подключение к БД</th><td>${health.databaseConnected ? 'Да' : 'Нет'}</td></tr>
+                        <tr><th>Проверено</th><td>${formatDate(health.timestamp)}</td></tr>
+                        <tr><th>Версия API</th><td>${health.version || '—'}</td></tr>
+                        <tr><th>Health endpoint</th><td><code>/api/health</code></td></tr>
+                    </tbody>
+                </table>
+            `;
+        }
+
+        function startStatusPolling() {
+            stopStatusPolling();
+            statusTimer = setInterval(() => loadStatus().catch(() => {}), 30000);
+        }
+
+        function stopStatusPolling() {
+            if (statusTimer) clearInterval(statusTimer);
+            statusTimer = null;
+        }
+
+        async function loadAll() {
+            const key = getKey();
+            if (!key) {
+                setError('Введите ключ администратора.');
+                return;
+            }
+
+            localStorage.setItem('robo-admin-key', key);
+            setError('');
+            setSuccess('Данные обновлены.');
+
+            await Promise.all([
+                loadOverview(),
+                loadApplications(),
+                loadPackages(),
+                loadTrainers(),
+                loadStatus(),
+            ]);
+        }
+
+        connectBtn.addEventListener('click', () => loadAll().catch(err => {
+            setError(err.message || 'Не удалось подключиться к серверу.');
+        }));
+
+        refreshBtn.addEventListener('click', () => loadAll().catch(err => {
+            setError(err.message || 'Не удалось обновить данные.');
+        }));
+
+        if (keyInput.value) {
+            loadAll().catch(() => {});
+        }
+    </script>
+</body>
+</html>

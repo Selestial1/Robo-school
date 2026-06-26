@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ROBO.SCHOOL — статус сервера</title>
+    <link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: "Jost", sans-serif;
+            background: #141024;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+        .card {
+            width: min(520px, 100%);
+            background: #1f1a38;
+            border-radius: 16px;
+            padding: 32px;
+            text-align: center;
+        }
+        h1 { font-size: 28px; margin-bottom: 8px; }
+        .sub { color: #ffffffb2; margin-bottom: 24px; }
+        .indicator {
+            width: 88px;
+            height: 88px;
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            background: #ffffff15;
+        }
+        .indicator.ok { background: #1f8f4d33; box-shadow: 0 0 0 4px #1f8f4d55; }
+        .indicator.warn { background: #b07d0033; box-shadow: 0 0 0 4px #b07d0055; }
+        .indicator.err { background: #D5202733; box-shadow: 0 0 0 4px #D5202755; }
+        .status-text { font-size: 22px; font-weight: 600; margin-bottom: 8px; }
+        .details { color: #ffffffb2; line-height: 1.6; margin-bottom: 24px; }
+        a { color: #ff6b6f; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        .links { display: flex; flex-direction: column; gap: 10px; }
+        .muted { color: #ffffff80; font-size: 14px; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>ROBO.SCHOOL</h1>
+        <p class="sub">Проверка работоспособности сайта</p>
+        <div class="indicator err" id="indicator">?</div>
+        <p class="status-text" id="status-text">Проверяем...</p>
+        <p class="details" id="details">Подключение к серверу...</p>
+        <div class="links">
+            <a href="/">Открыть сайт</a>
+            <a href="/admin.html">Панель базы данных</a>
+        </div>
+        <p class="muted" id="updated">Автообновление каждые 30 секунд</p>
+    </div>
+
+    <script>
+        const indicator = document.getElementById('indicator');
+        const statusText = document.getElementById('status-text');
+        const details = document.getElementById('details');
+        const updated = document.getElementById('updated');
+
+        function formatDate(iso) {
+            return new Date(iso).toLocaleString('ru-RU');
+        }
+
+        async function checkHealth() {
+            try {
+                const res = await fetch('/api/health');
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                const data = await res.json();
+
+                const isOk = data.status === 'ok' && data.databaseConnected;
+                indicator.className = 'indicator ' + (isOk ? 'ok' : data.status === 'degraded' ? 'warn' : 'err');
+                indicator.textContent = isOk ? '✓' : '!';
+                statusText.textContent = isOk ? 'Сайт работает' : 'Есть проблемы';
+                details.innerHTML = `
+                    База: ${data.database}<br>
+                    Подключение: ${data.databaseConnected ? 'активно' : 'нет'}<br>
+                    Проверено: ${formatDate(data.timestamp)}
+                `;
+                updated.textContent = 'Последняя проверка: ' + formatDate(new Date().toISOString());
+            } catch {
+                indicator.className = 'indicator err';
+                indicator.textContent = '✕';
+                statusText.textContent = 'Сервер недоступен';
+                details.textContent = 'Сайт не отвечает. Если вы на локальном ПК — запустите start.bat.';
+                updated.textContent = 'Последняя попытка: ' + formatDate(new Date().toISOString());
+            }
+        }
+
+        checkHealth();
+        setInterval(checkHealth, 30000);
+    </script>
+</body>
+</html>

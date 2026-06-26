@@ -1,0 +1,7 @@
+server/bin/
+server/obj/
+data/
+.env
+*.db
+*.db-shm
+*.db-wal
